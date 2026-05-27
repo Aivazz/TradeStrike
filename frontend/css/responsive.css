@@ -1,0 +1,234 @@
+﻿@media (max-width: 1400px) {
+    .topbar {
+        grid-template-columns: 260px minmax(280px, 1fr) auto;
+        gap: 24px;
+    }
+
+    .trending-grid,
+    .market-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1100px) {
+    .sidebar-container {
+        width: 270px;
+        min-width: 270px;
+    }
+
+    .nav-item {
+        width: 230px;
+        font-size: 18px;
+    }
+
+    .topbar {
+        grid-template-columns: 1fr;
+        height: auto;
+        padding: 22px 28px;
+        gap: 18px;
+    }
+
+    .topbar-actions {
+        justify-self: start;
+    }
+
+    .content-padding {
+        height: calc(100vh - 178px);
+        padding: 30px 28px;
+    }
+
+    .trending-grid,
+    .market-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .overview-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .trade-body {
+        grid-template-columns: 1fr;
+    }
+
+    .trade-swap-icon {
+        justify-self: center;
+        transform: rotate(90deg);
+    }
+
+    .analytics-control-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .export-button {
+        justify-content: center;
+    }
+
+    .courses-table {
+        overflow-x: auto;
+    }
+
+    .courses-row {
+        min-width: 760px;
+    }
+
+    .settings-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-tabs {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .settings-tabs button {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 760px) {
+    body {
+        overflow: auto;
+    }
+
+    .layout-wrapper {
+        min-height: 100vh;
+        height: auto;
+        flex-direction: column;
+    }
+
+    .sidebar-container {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+    }
+
+    .logo-area {
+        height: auto;
+        padding: 24px;
+    }
+
+    .nav-menu {
+        padding: 12px;
+    }
+
+    .nav-item {
+        width: 100%;
+    }
+
+    .user-widget {
+        display: none;
+    }
+
+    .main-content,
+    .content-padding {
+        height: auto;
+        overflow: visible;
+    }
+
+    .trending-grid,
+    .market-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-card {
+        min-height: 110px;
+        padding: 22px;
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+
+    .trade-tabs {
+        width: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .trade-card {
+        padding: 18px;
+    }
+
+    .trade-card-header,
+    .trade-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .trade-meta,
+    .trade-actions {
+        justify-content: flex-start;
+    }
+
+    .trade-action {
+        width: 100%;
+    }
+
+    .trade-item {
+        grid-template-columns: 46px minmax(0, 1fr);
+    }
+
+    .trade-item > strong {
+        grid-column: 2;
+    }
+
+    .range-picker {
+        width: 100%;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-chart-card,
+    .top-courses-card {
+        padding: 18px;
+    }
+
+    .revenue-chart {
+        gap: 9px;
+        height: 240px;
+    }
+
+    .chart-column span {
+        font-size: 11px;
+    }
+
+    .settings-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-card {
+        padding: 20px;
+    }
+
+    .profile-editor,
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-avatar {
+        width: 84px;
+        height: 84px;
+    }
+
+    .settings-toggle {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .settings-actions {
+        flex-direction: column-reverse;
+    }
+
+    .settings-actions button {
+        width: 100%;
+    }
+}

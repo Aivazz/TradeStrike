@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeStrike | Marketplace</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/marketplace.css">
+    <link rel="stylesheet" href="css/inventory.css">
+    <link rel="stylesheet" href="css/trade-offers.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/friends.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div id="auth-root"></div>
+
+    <div id="app-shell" class="d-flex layout-wrapper">
+        <div id="sidebar-root" class="sidebar-container"></div>
+
+        <div class="main-content flex-grow-1 d-flex flex-column">
+            <div id="topbar-root"></div>
+
+            <div class="content-padding overflow-auto">
+                <div id="trending-root" class="mb-4"></div>
+                <div id="market-root"></div>
+                <div id="inventory-root"></div>
+                <div id="trade-offers-root"></div>
+                <div id="settings-root"></div>
+                <div id="favorites-root"></div>
+                <div id="friends-root"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspect Item Modal -->
+    <div class="modal-backdrop" id="inspect-item-modal" aria-hidden="true" onclick="handleInspectBackdrop(event)">
+        <div class="inspect-modal-card" id="inspect-modal-content" role="dialog" aria-modal="true"></div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components/auth.js"></script>
+    <script src="js/components/sidebar.js"></script>
+    <script src="js/components/topbar.js"></script>
+    <script src="js/components/trending.js"></script>
+    <script src="js/components/market.js"></script>
+    <script src="js/components/inventory.js"></script>
+    <script src="js/components/trade-offers.js"></script>
+    <script src="js/components/settings.js"></script>
+    <script src="js/components/friends.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

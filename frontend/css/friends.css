@@ -1,0 +1,528 @@
+/* frontend/css/friends.css */
+
+.friends-container {
+    padding: 0;
+    margin-top: 10px;
+}
+
+/* Header styled with Steam actions in our theme */
+.friends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.friends-title-group h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.friends-title-group h2 span {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.friends-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-friends-action {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    color: #ffffff;
+}
+
+.btn-friends-action.manage-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-color);
+}
+
+.btn-friends-action.manage-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-soft);
+}
+
+.btn-friends-action.add-btn {
+    background: #709228; /* Steam Green */
+}
+
+.btn-friends-action.add-btn:hover {
+    background: #84ac30;
+    box-shadow: 0 0 12px rgba(112, 146, 40, 0.4);
+}
+
+/* Search bar matching layout */
+.friends-search-wrapper {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.friends-search-wrapper .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+.friends-search-wrapper input {
+    width: 100%;
+    height: 48px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0 16px 0 46px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.friends-search-wrapper input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: rgba(15, 23, 42, 0.7);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Sections & Grid layout */
+.friends-sections-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.friends-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.section-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.section-title.requests-title {
+    color: #eab308; /* Steam pending requests yellow */
+}
+
+.section-title.online-title {
+    color: #54a5d4; /* Steam online status blue */
+}
+
+.section-title.offline-title {
+    color: var(--text-muted);
+}
+
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+/* Friend card design */
+.friend-card {
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.friend-card:hover {
+    transform: translateY(-1px);
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Avatar styling */
+.friend-avatar-wrapper {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    padding: 2px;
+    background: var(--avatar-bg, #3b82f6);
+}
+
+.friend-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    background: #1b2838;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* Indicator dot and border highlight */
+.friend-card.online .friend-avatar-wrapper {
+    box-shadow: 0 0 8px rgba(84, 165, 212, 0.3);
+}
+
+.friend-card.offline .friend-avatar-wrapper {
+    background: #4c545d;
+    opacity: 0.6;
+}
+
+.status-indicator-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #1e293b;
+}
+
+.friend-card.online .status-indicator-dot {
+    background: #5cbf3f; /* green */
+}
+
+.friend-card.offline .status-indicator-dot {
+    background: #707c88; /* grey */
+}
+
+/* Info texts */
+.friend-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-name {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s;
+}
+
+.friend-card.online:hover .friend-name {
+    color: #66c0f4;
+}
+
+.friend-status-text {
+    margin: 0;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-card.online .friend-status-text {
+    color: #90ba3c; /* Steam in-game green */
+    font-weight: 500;
+}
+
+.friend-card.offline .friend-status-text {
+    color: var(--text-muted);
+}
+
+/* Manage mode & delete button style */
+.remove-friend-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.remove-friend-btn:hover {
+    background: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Display delete buttons in manage mode or hover */
+.friends-container.manage-mode-active .remove-friend-btn {
+    display: flex !important;
+}
+
+.friends-container:not(.manage-mode-active) .friend-card:hover .remove-friend-btn {
+    display: flex;
+}
+
+/* Placeholders when list empty */
+.no-friends-placeholder {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+/* Add Friend Modal Style */
+.add-friend-modal-card {
+    position: relative;
+    width: min(440px, 100%);
+    padding: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.add-modal-heading {
+    margin: 0 0 20px;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.friends-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-form-label {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.modal-form-control {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    color: #ffffff;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.modal-form-control:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* Custom Checkbox Row */
+.modal-form-group-checkbox {
+    margin-top: 4px;
+}
+
+.checkbox-label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    user-select: none;
+}
+
+.checkbox-label-wrapper input {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-main);
+    position: relative;
+    transition: all 0.2s;
+}
+
+.checkbox-label-wrapper input:checked + .checkbox-custom {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.checkbox-label-wrapper input:checked + .checkbox-custom::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-text {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Modal Footer */
+.friends-modal-footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 16px;
+}
+
+/* Friend Requests action button styles */
+.request-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.btn-request-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-request-action.accept {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.btn-request-action.accept:hover {
+    background: #10b981;
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.btn-request-action.decline {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.btn-request-action.decline:hover {
+    background: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+
+
+/* Search input wrap inside modal */
+.friend-search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.friend-search-input-wrap .bi-search {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted);
+    font-size: 15px;
+    pointer-events: none;
+}
+.friend-search-input-wrap .modal-form-control {
+    padding-left: 38px;
+}
+
+/* Search results list */
+.friend-search-results {
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+.search-hint {
+    margin: 8px 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+}
+.search-result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.search-result-row:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* Remove friend confirmation modal icon */
+.remove-modal-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+.remove-modal-icon .bi {
+    font-size: 36px;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+

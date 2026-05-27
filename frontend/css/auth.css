@@ -1,0 +1,122 @@
+.auth-screen {
+    min-height: 100vh;
+    padding: 32px;
+    background: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-panel {
+    width: min(460px, 100%);
+    padding: 30px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 15px;
+}
+
+.auth-brand {
+    margin-bottom: 24px;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 7px;
+    margin-bottom: 24px;
+    background: #111a2b;
+    border: 1px solid #32425d;
+    border-radius: 14px;
+}
+
+.auth-tabs button {
+    height: 44px;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.auth-tabs button.active {
+    color: #ffffff;
+    background: #243755;
+    border-color: #2f5190;
+}
+
+.auth-form {
+    display: grid;
+    gap: 16px;
+}
+
+.auth-form label {
+    display: grid;
+    gap: 8px;
+}
+
+.auth-form span {
+    color: #c1cee0;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.auth-form input {
+    width: 100%;
+    height: 52px;
+    padding: 0 15px;
+    color: #ffffff;
+    background: #0d1526;
+    border: 1px solid #32425d;
+    border-radius: 11px;
+    outline: none;
+}
+
+.auth-form input:focus {
+    border-color: var(--accent-blue);
+}
+
+.auth-submit {
+    height: 48px;
+    margin-top: 8px;
+    color: #062d22;
+    background: var(--accent-green);
+    border: 1px solid var(--accent-green);
+    border-radius: 11px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.demo-users {
+    margin-top: 22px;
+    padding: 16px;
+    color: var(--text-muted);
+    background: #172235;
+    border: 1px solid #32425d;
+    border-radius: 12px;
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.demo-users strong {
+    color: #ffffff;
+}
+
+.logout-button {
+    margin-top: 7px;
+    padding: 0;
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    color: #ffffff;
+}

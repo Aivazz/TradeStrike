@@ -1,0 +1,111 @@
+/* Общие стили и темная тема */
+body {
+    background-color: #0d1017; /* Глубокий темно-синий/черный */
+    color: #e6e6e6;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Навигационная панель */
+.custom-navbar {
+    background-color: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 15px 0;
+}
+.custom-navbar .nav-link {
+    color: #8b949e !important;
+    font-weight: 500;
+}
+.custom-navbar .nav-link.active, 
+.custom-navbar .nav-link:hover {
+    color: #ffffff !important;
+}
+
+/* Бейдж баланса */
+.balance-badge {
+    background-color: #0d1017;
+    padding: 6px 15px;
+    border-radius: 8px;
+    border: 1px solid #30363d;
+}
+
+/* Панель фильтров */
+.filters-bar {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+}
+.search-input {
+    background-color: #0d1017;
+    border: 1px solid #30363d;
+    color: white;
+}
+.search-input:focus {
+    background-color: #0d1017;
+    color: white;
+    box-shadow: none;
+    border-color: #58a6ff;
+}
+
+/* Карточка предмета (Skin Card) */
+.skin-card {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    position: relative;
+}
+.skin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    border-color: #4b525d;
+}
+
+/* Картинка предмета внутри карточки */
+.skin-img-wrapper {
+    background: radial-gradient(circle, #21262d 0%, #161b22 100%);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 2px solid; /* Цвет будет зависеть от редкости в JS */
+}
+.skin-img-wrapper img {
+    max-width: 100%;
+    height: 120px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+.skin-card:hover .skin-img-wrapper img {
+    transform: scale(1.1);
+}
+
+/* Текст карточки */
+.skin-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.skin-float {
+    font-size: 11px;
+    color: #8b949e;
+}
+.skin-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3fb950; /* Зеленый цвет цены */
+}
+
+/* Кнопка покупки */
+.btn-buy {
+    background-color: transparent;
+    border: 1px solid #3fb950;
+    color: #3fb950;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.btn-buy:hover {
+    background-color: #3fb950;
+    color: #ffffff;
+}
