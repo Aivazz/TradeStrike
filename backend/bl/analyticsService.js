@@ -4,7 +4,7 @@ const allowedRanges = new Set(['today', '7d', '30d', 'year']);
 
 async function getDashboard(range = '7d') {
     if (!allowedRanges.has(range)) {
-        const error = new Error('Unknown analytics range');
+        const error = new Error('Bilinmeyen analiz aralığı');
         error.statusCode = 400;
         throw error;
     }
@@ -32,7 +32,7 @@ async function exportReport(range = '7d') {
         fileName: `market-analytics-${range}.csv`,
         contentType: 'text/csv',
         rowCount: dashboard.skins.length,
-        message: 'Report export successful. Downloading CSV...'
+        message: 'Rapor başarıyla dışa aktarıldı. CSV indiriliyor...'
     };
 }
 
@@ -51,10 +51,10 @@ function formatValue(value, format) {
 
 function getRangeLabel(range) {
     const labels = {
-        today: 'Hourly trading activity',
-        '7d': 'Daily trading activity',
-        '30d': 'Grouped daily trading activity',
-        year: 'Monthly trading activity'
+        today: 'Saatlik takas aktivitesi',
+        '7d': 'Günlük takas aktivitesi',
+        '30d': 'Gruplandırılmış günlük takas aktivitesi',
+        year: 'Aylık takas aktivitesi'
     };
 
     return labels[range];
@@ -62,8 +62,8 @@ function getRangeLabel(range) {
 
 function getChartLabel(range, index) {
     if (range === 'today') return `${index + 9}:00`;
-    if (range === 'year') return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index];
-    return `D${index + 1}`;
+    if (range === 'year') return ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][index];
+    return `G${index + 1}`;
 }
 
 module.exports = {

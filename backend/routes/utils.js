@@ -30,7 +30,7 @@ async function readJsonBody(req) {
         req.on('end', () => {
             if (!rawBody) return resolve({});
             try { resolve(JSON.parse(rawBody)); } 
-            catch (error) { reject({ statusCode: 400, message: 'Invalid JSON body' }); }
+            catch (error) { reject({ statusCode: 400, message: 'Geçersiz JSON gövdesi' }); }
         });
         req.on('error', reject);
     });

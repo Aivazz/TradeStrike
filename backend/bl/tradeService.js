@@ -10,7 +10,7 @@ const allowedTabs = new Set(['incoming', 'sent', 'history']);
 
 async function getTrades(tab = 'incoming', userId) {
     if (!allowedTabs.has(tab)) {
-        const error = new Error('Unknown trade tab');
+        const error = new Error('Bilinmeyen takas sekmesi');
         error.statusCode = 400; throw error;
     }
     const [counts, offers] = await Promise.all([
@@ -27,7 +27,7 @@ async function getTrades(tab = 'incoming', userId) {
 async function getTrade(id, userId) {
     const trade = await tradeDal.getFormattedTradeById(id, userId);
     if (!trade) {
-        const error = new Error('Trade offer not found');
+        const error = new Error('Takas teklifi bulunamadı');
         error.statusCode = 404; throw error;
     }
     return enrichTrade(trade);
@@ -37,7 +37,7 @@ async function createTrade(senderId, recipientId, isGift = false, giveItemIds = 
     // Guard: only friends can trade
     const friendship = await friendshipDal.getFriendship(senderId, recipientId);
     if (!friendship || friendship.status !== 'accepted') {
-        const error = new Error('Вы можете отправлять трейды только своим друзьям');
+        const error = new Error('Yalnızca arkadaşlarınıza takas teklifi gönderebilirsiniz');
         error.statusCode = 403; throw error;
     }
 
@@ -47,14 +47,14 @@ async function createTrade(senderId, recipientId, isGift = false, giveItemIds = 
     // Collect give items (sender's inventory)
     for (const itemId of (giveItemIds || [])) {
         const item = await itemDal.findInventoryItemById(itemId, senderId);
-        if (item) giveItems.push({ name: item.name, condition: item.condition, value: item.estPrice, rarity: item.rarity });
+        if (item) giveItems.push({ name: item.name, condition: item.condition, value: item.estPrice, rarity: item.rarity, imageUrl: item.imageUrl });
     }
 
     // Collect receive items (recipient's inventory) — skip in gift mode
     if (!isGift) {
         for (const itemId of (receiveItemIds || [])) {
             const item = await itemDal.findInventoryItemById(itemId, recipientId);
-            if (item) receiveItems.push({ name: item.name, condition: item.condition, value: item.estPrice, rarity: item.rarity });
+            if (item) receiveItems.push({ name: item.name, condition: item.condition, value: item.estPrice, rarity: item.rarity, imageUrl: item.imageUrl });
         }
     }
 
@@ -78,7 +78,7 @@ async function createTrade(senderId, recipientId, isGift = false, giveItemIds = 
 async function acceptTrade(id, userId) {
     const trade = await tradeDal.findTradeById(id);
     if (!trade || trade.recipientId !== userId) {
-        const error = new Error('Trade not found or not authorized');
+        const error = new Error('Takas bulunamadı veya yetkiniz yok');
         error.statusCode = 403; throw error;
     }
 
@@ -91,7 +91,7 @@ async function acceptTrade(id, userId) {
             await itemDal.transferInventoryItems(trade.receiveItemIds, trade.recipientId, trade.senderId);
         }
     } catch (err) {
-        console.error('[Trade] Item transfer failed:', err.message);
+        console.error('[Takas] Eşya transferi başarısız:', err.message);
     }
 
     return moveToHistory(id, 'Accepted', userId);
@@ -100,7 +100,7 @@ async function acceptTrade(id, userId) {
 async function declineTrade(id, userId) {
     const trade = await getTrade(id, userId);
     if (trade.tab !== 'incoming') {
-        const error = new Error('Trade is not incoming'); error.statusCode = 409; throw error;
+        const error = new Error('Takas gelen bir teklif değil'); error.statusCode = 409; throw error;
     }
     return moveToHistory(id, 'Declined', userId);
 }
@@ -108,7 +108,7 @@ async function declineTrade(id, userId) {
 async function cancelTrade(id, userId) {
     const trade = await getTrade(id, userId);
     if (trade.tab !== 'sent') {
-        const error = new Error('Trade is not sent'); error.statusCode = 409; throw error;
+        const error = new Error('Takas gönderilen bir teklif değil'); error.statusCode = 409; throw error;
     }
     return moveToHistory(id, 'Cancelled', userId);
 }
@@ -116,16 +116,16 @@ async function cancelTrade(id, userId) {
 async function counterTrade(id, userId, itemIds = []) {
     const trade = await tradeDal.findTradeById(id);
     if (!trade) {
-        const error = new Error('Trade offer not found'); error.statusCode = 404; throw error;
+        const error = new Error('Takas teklifi bulunamadı'); error.statusCode = 404; throw error;
     }
     if (trade.recipientId !== userId) {
-        const error = new Error('Only the recipient can counter this trade'); error.statusCode = 403; throw error;
+        const error = new Error('Bu teklife yalnızca alıcı karşı teklif sunabilir'); error.statusCode = 403; throw error;
     }
 
     const counterItems = [];
     for (const itemId of (itemIds || [])) {
         const item = await itemDal.findInventoryItemById(itemId, userId);
-        if (item) counterItems.push({ name: item.name, condition: item.condition, value: item.estPrice, rarity: item.rarity });
+        if (item) counterItems.push({ name: item.name, condition: item.condition, value: item.estPrice, rarity: item.rarity, imageUrl: item.imageUrl });
     }
 
     // Swap sender/recipient and update items

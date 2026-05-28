@@ -7,7 +7,7 @@ async function handleAnalyticsRoute(req, res, pathname, searchParams) {
             const range = searchParams.get('range') || '7d';
             return sendJson(res, 200, { data: await analyticsService.getDashboard(range) });
         } catch (error) {
-            return sendRouteError(res, error, 'Unexpected analytics error');
+            return sendRouteError(res, error, 'Beklenmedik analiz hatası');
         }
     }
 
@@ -16,7 +16,7 @@ async function handleAnalyticsRoute(req, res, pathname, searchParams) {
             const range = searchParams.get('range') || '7d';
             return sendJson(res, 200, { data: await analyticsService.exportReport(range) });
         } catch (error) {
-            return sendRouteError(res, error, 'Unexpected analytics export error');
+            return sendRouteError(res, error, 'Beklenmedik analiz dışa aktarma hatası');
         }
     }
 

@@ -261,3 +261,22 @@
     background: rgba(255, 255, 255, 0.05);
     color: #ffffff;
 }
+
+.steam-sell-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.steam-sell-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.steam-sell-col label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 0;
+}

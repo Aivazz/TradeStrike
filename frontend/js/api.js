@@ -43,8 +43,9 @@ function buyMarketplaceItem(id) {
     return apiRequest(`/market/items/${id}/buy`, { method: 'POST' });
 }
 
-function getInventory() {
-    return apiRequest('/inventory');
+function getInventory(userId = null) {
+    const url = userId ? `/inventory?userId=${userId}` : '/inventory';
+    return apiRequest(url);
 }
 
 function getInventoryItem(id) {
@@ -145,9 +146,34 @@ function deleteFavorite(marketItemId) {
 function showToast(message, type = 'info') {
     let toastType = type;
     const lower = message.toLowerCase();
-    if (lower.includes('error') || lower.includes('failed') || lower.includes('wrong') || lower.includes('invalid') || lower.includes('not match')) {
+    if (
+        lower.includes('error') || 
+        lower.includes('failed') || 
+        lower.includes('wrong') || 
+        lower.includes('invalid') || 
+        lower.includes('not match') ||
+        lower.includes('hata') ||
+        lower.includes('başarısız') ||
+        lower.includes('geçersiz') ||
+        lower.includes('yanlış') ||
+        lower.includes('bulunamadı') ||
+        lower.includes('yetkisiz')
+    ) {
         toastType = 'error';
-    } else if (lower.includes('success') || lower.includes('successfully') || lower.includes('done') || lower.includes('bought') || lower.includes('listed')) {
+    } else if (
+        lower.includes('success') || 
+        lower.includes('successfully') || 
+        lower.includes('done') || 
+        lower.includes('bought') || 
+        lower.includes('listed') ||
+        lower.includes('başarılı') ||
+        lower.includes('başarıyla') ||
+        lower.includes('tamamlandı') ||
+        lower.includes('alındı') ||
+        lower.includes('eklendi') ||
+        lower.includes('kaldırıldı') ||
+        lower.includes('gönderildi')
+    ) {
         toastType = 'success';
     } else {
         toastType = 'info';
@@ -240,4 +266,8 @@ function apiRemoveFriend(targetUserId) {
     });
 }
 
-
+// ─── Image Proxy Function (для загрузки картинок через сервер) ───────────
+function getImageUrl(externalUrl) {
+    if (!externalUrl) return '';
+    return `${API_BASE_URL}/proxy-image?url=${encodeURIComponent(externalUrl)}`;
+}

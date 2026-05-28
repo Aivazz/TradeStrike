@@ -39,11 +39,7 @@ function renderAuthScreen(mode = activeAuthMode) {
                     ${isLogin ? renderLoginFields() : renderRegisterFields()}
                     <button class="auth-submit" type="submit">${isLogin ? 'Giriş Yap' : 'Hesap Oluştur'}</button>
                 </form>
-                <div class="demo-users">
-                    <strong>Demo Kullanıcıları</strong>
-                    <span>trader / trader123</span>
-                    <span>admin / admin123</span>
-                </div>
+                
             </section>
         </main>
     `;

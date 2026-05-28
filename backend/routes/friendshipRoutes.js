@@ -10,14 +10,14 @@ async function handleFriendshipRoute(req, res, pathname, searchParams) {
     if (req.method === 'GET' && pathname === '/api/friends') {
         try {
             return sendJson(res, 200, { data: await friendshipService.getFriends(getBearerToken(req), S()) });
-        } catch (e) { return sendRouteError(res, e, 'Failed to get friends'); }
+        } catch (e) { return sendRouteError(res, e, 'Arkadaşlar getirilemedi'); }
     }
 
     // GET /api/friends/requests
     if (req.method === 'GET' && pathname === '/api/friends/requests') {
         try {
             return sendJson(res, 200, { data: await friendshipService.getIncomingRequests(getBearerToken(req), S()) });
-        } catch (e) { return sendRouteError(res, e, 'Failed to get requests'); }
+        } catch (e) { return sendRouteError(res, e, 'İstekler getirilemedi'); }
     }
 
     // GET /api/friends/search?q=
@@ -25,7 +25,7 @@ async function handleFriendshipRoute(req, res, pathname, searchParams) {
         try {
             const q = searchParams.get('q') || '';
             return sendJson(res, 200, { data: await friendshipService.searchOnlineUsers(getBearerToken(req), S(), q) });
-        } catch (e) { return sendRouteError(res, e, 'Failed to search users'); }
+        } catch (e) { return sendRouteError(res, e, 'Kullanıcı aranamadı'); }
     }
 
     // POST /api/friends/request
@@ -34,7 +34,7 @@ async function handleFriendshipRoute(req, res, pathname, searchParams) {
             const body = await readJsonBody(req);
             const result = await friendshipService.sendRequest(getBearerToken(req), S(), Number(body.targetUserId));
             return sendJson(res, 201, { data: result });
-        } catch (e) { return sendRouteError(res, e, 'Failed to send request'); }
+        } catch (e) { return sendRouteError(res, e, 'İstek gönderilemedi'); }
     }
 
     // POST /api/friends/accept
@@ -43,7 +43,7 @@ async function handleFriendshipRoute(req, res, pathname, searchParams) {
             const body = await readJsonBody(req);
             const result = await friendshipService.acceptRequest(getBearerToken(req), S(), Number(body.friendshipId));
             return sendJson(res, 200, { data: result });
-        } catch (e) { return sendRouteError(res, e, 'Failed to accept request'); }
+        } catch (e) { return sendRouteError(res, e, 'İstek kabul edilemedi'); }
     }
 
     // POST /api/friends/decline
@@ -52,7 +52,7 @@ async function handleFriendshipRoute(req, res, pathname, searchParams) {
             const body = await readJsonBody(req);
             const result = await friendshipService.declineRequest(getBearerToken(req), S(), Number(body.friendshipId));
             return sendJson(res, 200, { data: result });
-        } catch (e) { return sendRouteError(res, e, 'Failed to decline request'); }
+        } catch (e) { return sendRouteError(res, e, 'İstek reddedilemedi'); }
     }
 
     // DELETE /api/friends/remove
@@ -61,7 +61,7 @@ async function handleFriendshipRoute(req, res, pathname, searchParams) {
             const body = await readJsonBody(req);
             const result = await friendshipService.removeFriend(getBearerToken(req), S(), Number(body.targetUserId));
             return sendJson(res, 200, { data: result });
-        } catch (e) { return sendRouteError(res, e, 'Failed to remove friend'); }
+        } catch (e) { return sendRouteError(res, e, 'Arkadaş silinemedi'); }
     }
 
     return false;

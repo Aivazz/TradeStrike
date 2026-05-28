@@ -14,25 +14,68 @@ window.weaponCategories = {
     ]
 };
 
+window.categoryKeywords = {
+    knife: ['★', 'knife', 'bıçak', 'dagger', 'bayonet', 'karambit', 'нож', 'ножи', 'стилет', 'наваха', 'фальшион', 'falçata', 'керамбит', 'бабочка', 'тычковые'],
+    pistol: ['glock', 'usp', 'p2000', 'p250', 'desert eagle', 'deagle', 'tec-9', 'tec9', 'cz75', 'beretta', 'five-seven', 'r8', 'revolver', 'дигл'],
+    smg: ['mac-10', 'mac10', 'mp9', 'mp7', 'mp5', 'ump', 'p90', 'bizon'],
+    sniper: ['awp', 'ssg', 'scar-20', 'scar20', 'g3sg1'],
+    shotgun: ['nova', 'xm1014', 'mag-7', 'mag7', 'sawed', 'обрез'],
+    machinegun: ['negev', 'негев', 'm249'],
+    rifle: ['ak-47', 'ak47', 'm4a4', 'm4a1', 'famas', 'galil', 'aug', 'sg 553', 'sg553']
+};
+
 window.getWeaponCategory = function(name) {
     const lowerName = name.toLowerCase();
-    
-    if (lowerName.includes('knife') || lowerName.includes('dagger') || lowerName.includes('bayonet') || lowerName.includes('karambit') || lowerName.includes('нож')) {
-        return 'knife';
-    }
-    
-    for (const [catKey, list] of Object.entries(window.weaponCategories)) {
-        if (catKey === 'knife') continue;
-        for (const item of list) {
-            const cleanItem = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const cleanName = lowerName.replace(/[^a-z0-9]/g, '');
-            if (cleanName.includes(cleanItem)) {
+    for (const [catKey, keywords] of Object.entries(window.categoryKeywords)) {
+        for (const kw of keywords) {
+            if (lowerName.includes(kw)) {
                 return catKey;
             }
         }
     }
     return 'other';
 };
+
+window.weaponTranslations = {
+    'bayonet': ['bayonet', 'süngü', 'штык-нож'],
+    'm9 bayonet': ['m9 bayonet', 'm9 süngü', 'm9 штык-нож'],
+    'flip knife': ['flip knife', 'katlanır bıçak', 'складной нож'],
+    'gut knife': ['gut knife', 'avcı bıçağı', 'нож с лезвием-крюком'],
+    'karambit': ['karambit', 'керамбит'],
+    'huntsman knife': ['huntsman knife', 'av bıçağı', 'охотничий нож'],
+    'butterfly knife': ['butterfly knife', 'kelebek bıçağı', 'нож-бабочка'],
+    'falchion knife': ['falchion knife', 'falçata', 'фальшион'],
+    'shadow daggers': ['shadow daggers', 'gölge hançerler', 'тычковые ножи', 'тычковые'],
+    'bowie knife': ['bowie knife', 'bowie bıçağı', 'нож боуи'],
+    'navaja knife': ['navaja knife', 'navaja bıçağı', 'наваха'],
+    'stiletto knife': ['stiletto knife', 'stiletto bıçağı', 'стилет'],
+    'ursus knife': ['ursus knife', 'ursus bıçağı', 'медвежий нож'],
+    'talon knife': ['talon knife', 'talon bıçağı', 'когтевой нож'],
+    'classic knife': ['classic knife', 'klasik bıçak', 'классический нож'],
+    'paracord knife': ['paracord knife', 'paracord bıçağı', 'паракорд-нож'],
+    'survival knife': ['survival knife', 'hayatta kalma bıçağı', 'нож выживания'],
+    'nomad knife': ['nomad knife', 'göçebe bıçağı', 'нож бродяги'],
+    'skeleton knife': ['skeleton knife', 'iskelet bıçağı', 'скелетный нож'],
+    'kukri knife': ['kukri knife', 'kukri bıçağı', 'кукри'],
+    'sawed-off': ['sawed-off', 'sawedoff', 'обрез'],
+    'negev': ['negev', 'негев']
+};
+
+window.matchesSelectedWeapons = function(itemName, selectedWeapons) {
+    if (!selectedWeapons || selectedWeapons.length === 0) return true;
+    const nameLower = itemName.toLowerCase();
+    return selectedWeapons.some(w => {
+        const wLower = w.toLowerCase();
+        const syns = window.weaponTranslations[wLower] || [wLower];
+        return syns.some(syn => {
+            if (syn === 'bayonet' || syn === 'süngü' || syn === 'штык-нож') {
+                return nameLower.includes(syn) && !nameLower.includes('m9');
+            }
+            return nameLower.includes(syn);
+        });
+    });
+};
+
 
 if (!window.currentFilters) {
     window.currentFilters = {
@@ -656,5 +699,7 @@ function triggerViewUpdate() {
         displayMarket();
     } else if (view === 'inventory' && typeof displayInventory === 'function') {
         displayInventory();
+    } else if (view === 'favorites' && typeof renderFavoritesList === 'function') {
+        renderFavoritesList();
     }
 }

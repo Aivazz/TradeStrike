@@ -16,7 +16,7 @@ async function getKpis() {
             { label: 'Total Users', value: data.totalUsers || 0, format: 'number', delta: '+12.7%', icon: 'bi-people' }
         ];
     } catch (err) {
-        console.error('Error fetching KPIs:', err);
+        console.error('KPI verileri alınırken hata oluştu:', err);
         return [];
     }
 }
@@ -51,7 +51,7 @@ async function getTopSkins() {
             };
         });
     } catch (err) {
-        console.error('Error fetching top skins:', err);
+        console.error('En popüler skinler alınırken hata oluştu:', err);
         return [];
     }
 }

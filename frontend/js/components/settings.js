@@ -2,6 +2,7 @@ let settingsState = {
     fullName: '',
     email: '',
     avatar: '',
+    isInventoryPrivate: false,
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -16,6 +17,9 @@ function renderSettings() {
         }
         if (!settingsState.email) {
             settingsState.email = userObj.email || (userObj.username ? `${userObj.username}@tradestrike.dev` : 'traderpro@tradestrike.dev');
+        }
+        if (settingsState.isInventoryPrivate === undefined || settingsState.isInventoryPrivate === null) {
+            settingsState.isInventoryPrivate = !!userObj.isInventoryPrivate;
         }
         settingsState.avatar = (userObj.displayName || userObj.username || 'TP').substring(0, 2).toUpperCase();
     }
@@ -53,6 +57,26 @@ function renderSettings() {
                             ${renderTextField('Mevcut Şifre', 'currentPassword', settingsState.currentPassword || '', 'password')}
                             ${renderTextField('Yeni Şifre', 'newPassword', settingsState.newPassword || '', 'password')}
                             ${renderTextField('Şifreyi Onayla', 'confirmPassword', settingsState.confirmPassword || '', 'password')}
+                        </div>
+                    </div>
+
+                    <!-- Gizlilik Ayarları (Privacy Settings) -->
+                    <div class="settings-card" style="margin-bottom: 24px;">
+                        <div class="settings-card-heading">
+                            <div>
+                                <h2>Gizlilik Ayarları</h2>
+                                <p>Envanterinizin diğer kullanıcılar tarafından görülme durumunu kontrol edin.</p>
+                            </div>
+                        </div>
+                        <div class="privacy-setting-row" style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+                            <div>
+                                <strong style="color: var(--text-primary); font-size: 14px;">Gizli Envanter</strong>
+                                <p style="margin: 4px 0 0; font-size: 13px; color: var(--text-muted);">Aktif edildiğinde, diğer kullanıcılar envanterinizi görüntüleyemez.</p>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="privacy-inventory-toggle" ${settingsState.isInventoryPrivate ? 'checked' : ''} onchange="updatePrivacySetting(this.checked)">
+                                <span class="slider-toggle"></span>
+                            </label>
                         </div>
                     </div>
 
@@ -242,6 +266,49 @@ function renderSettings() {
                 line-height: 1.6;
                 margin-bottom: 6px;
             }
+            /* Switch toggle slider styling */
+            .switch-toggle {
+                position: relative;
+                display: inline-block;
+                width: 48px;
+                height: 24px;
+            }
+            .switch-toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .slider-toggle {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: var(--bg-main);
+                border: 1px solid var(--border-color);
+                transition: .3s;
+                border-radius: 24px;
+            }
+            .slider-toggle:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 3px;
+                bottom: 3px;
+                background-color: var(--text-muted);
+                transition: .3s;
+                border-radius: 50%;
+            }
+            .switch-toggle input:checked + .slider-toggle {
+                background-color: var(--accent-blue);
+                border-color: var(--accent-blue);
+            }
+            .switch-toggle input:checked + .slider-toggle:before {
+                transform: translateX(24px);
+                background-color: #ffffff;
+            }
             @keyframes modalIn {
                 from { opacity: 0; transform: scale(0.93); }
                 to   { opacity: 1; transform: scale(1); }
@@ -285,7 +352,8 @@ async function saveSettingsChanges() {
 
         const updatePayload = {
             displayName: settingsState.fullName,
-            email: settingsState.email
+            email: settingsState.email,
+            isInventoryPrivate: settingsState.isInventoryPrivate
         };
 
         if (settingsState.newPassword) {
@@ -299,6 +367,7 @@ async function saveSettingsChanges() {
         if (typeof currentUser !== 'undefined') {
             currentUser.displayName = response.data.displayName;
             currentUser.email = response.data.email;
+            currentUser.isInventoryPrivate = response.data.isInventoryPrivate;
         }
 
         // Refresh components
@@ -328,12 +397,17 @@ function cancelSettingsChanges() {
         settingsState.fullName = userObj.displayName || userObj.username || '';
         settingsState.email = userObj.email || (userObj.username ? `${userObj.username}@tradestrike.dev` : 'traderpro@tradestrike.dev');
         settingsState.avatar = (userObj.displayName || userObj.username || 'TP').substring(0, 2).toUpperCase();
+        settingsState.isInventoryPrivate = !!userObj.isInventoryPrivate;
     }
     settingsState.currentPassword = '';
     settingsState.newPassword = '';
     settingsState.confirmPassword = '';
     renderSettings();
 }
+
+window.updatePrivacySetting = function(checked) {
+    settingsState.isInventoryPrivate = checked;
+};
 
 window.selectDepositAmount = function(amount) {
     const input = document.getElementById('deposit-amount-input');

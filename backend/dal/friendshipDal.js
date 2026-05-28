@@ -10,15 +10,11 @@ async function getIncomingRequests(userId) {
     return rows[0];
 }
 
-async function searchOnlineUsers(query, currentUserId, onlineUserIds) {
+async function searchOnlineUsers(query, currentUserId) {
     const like = `%${query}%`;
-    if (!onlineUserIds || onlineUserIds.length === 0) return [];
 
     const [rows] = await db.execute('CALL sp_SearchUsers(?, ?)', [like, currentUserId]);
-    const matchedUsers = rows[0];
-
-    // Фильтруем онлайн-пользователей на уровне Node.js
-    return matchedUsers.filter(u => onlineUserIds.includes(u.id));
+    return rows[0];
 }
 
 async function getFriendship(userId1, userId2) {

@@ -1,6 +1,11 @@
 let inventoryItems = [];
+let currentViewedUserId = null;
+let currentViewedUserName = '';
 
-async function renderInventory() {
+async function renderInventory(targetUserId = null, targetUserName = '') {
+    currentViewedUserId = targetUserId;
+    currentViewedUserName = targetUserName;
+
     const root = document.getElementById('inventory-root');
     root.innerHTML = `
         <section class="inventory-section">
@@ -9,7 +14,7 @@ async function renderInventory() {
     `;
 
     try {
-        const response = await getInventory();
+        const response = await getInventory(targetUserId);
         
         let actualItems = [];
         if (response.data && Array.isArray(response.data.items)) {
@@ -56,16 +61,7 @@ function displayInventory() {
 
     // Применяем фильтр по конкретному оружию (например, "AWP")
     if (window.currentFilters && window.currentFilters.selectedWeapons && window.currentFilters.selectedWeapons.length > 0) {
-        items = items.filter(item => {
-            const nameLower = item.name.toLowerCase();
-            return window.currentFilters.selectedWeapons.some(w => {
-                const wLower = w.toLowerCase();
-                if (wLower === 'bayonet') {
-                    return nameLower.includes('bayonet') && !nameLower.includes('m9');
-                }
-                return nameLower.includes(wLower);
-            });
-        });
+        items = items.filter(item => window.matchesSelectedWeapons(item.name, window.currentFilters.selectedWeapons));
     }
 
     // Применяем фильтр по качеству/состоянию (Condition)
@@ -119,7 +115,7 @@ function displayInventory() {
             <div class="market-col">
                 <article class="item-card inventory-card" style="--rarity-color: ${item.rarity || '#4b69ff'};">
                     <div class="item-image-wrapper" style="cursor: pointer;" onclick="inspectInventoryItem(${item.id})">
-                        <img src="${item.imageUrl}" alt="${item.name}">
+                        <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, 'inventory', ${item.id})">
                         ${isStatTrak ? '<span class="stattrak-badge">StatTrak™</span>' : ''}
                     </div>
                     <div class="item-body" style="cursor: pointer;" onclick="inspectInventoryItem(${item.id})">
@@ -147,9 +143,9 @@ function displayInventory() {
                         <span>Tahmini Fiyat</span>
                         <strong>${item.estPrice.toFixed(2)} &#8378;</strong>
                     </div>
-                    <div class="inventory-actions">
-                        <button class="btn-buy btn-sell" onclick="openSellModal(${item.id})">Sat</button>
-                        <button class="btn-inspect" onclick="inspectInventoryItem(${item.id})">İncele</button>
+                    <div class="inventory-actions" style="${currentViewedUserId ? 'display: block;' : ''}">
+                        ${!currentViewedUserId ? `<button class="btn-buy btn-sell" onclick="openSellModal(${item.id})">Sat</button>` : ''}
+                        <button class="btn-inspect" style="${currentViewedUserId ? 'width: 100%;' : ''}" onclick="inspectInventoryItem(${item.id})">İncele</button>
                     </div>
                 </article>
             </div>
@@ -169,14 +165,14 @@ function displayInventory() {
                 <article class="overview-card">
                     <div class="overview-icon value"><i class="bi bi-wallet2"></i></div>
                     <div>
-                        <span>Tahmini Değer</span>
+                        <span>${currentViewedUserId ? 'Envanter Değeri' : 'Envanterinizin Değeri'}</span>
                         <strong>${estimatedValue.toFixed(2)} &#8378;</strong>
                     </div>
                 </article>
             </div>
 
             <div class="section-heading items-heading">
-                <h2>Envanter Listesi</h2>
+                <h2>${currentViewedUserId ? `${currentViewedUserName} Envanteri` : 'Envanteriniz'}</h2>
                 <span>${totalItemsCount} sahip olunan eşya</span>
             </div>
 
@@ -191,15 +187,32 @@ function displayInventory() {
             </div>
 
             <div class="modal-backdrop" id="sell-modal" aria-hidden="true" onclick="handleSellBackdrop(event)">
-                <div class="sell-modal" role="dialog" aria-modal="true" aria-labelledby="sell-modal-title">
+                <div class="sell-modal" role="dialog" aria-modal="true" aria-labelledby="sell-modal-title" style="width: min(440px, 100%);">
                     <button class="modal-close" onclick="closeSellModal()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
                     <h2 id="sell-modal-title">Eşyayı Satışa Çıkar</h2>
-                    <p id="sell-modal-item">İstediğiniz satış fiyatını seçin.</p>
-                    <label for="sell-price">Satış Fiyatı</label>
-                    <div class="price-input-wrap">
-                        <input id="sell-price" type="number" min="0" step="0.01" placeholder="0.00">
-                        <span>&#8378;</span>
+                    <p id="sell-modal-item" style="margin-bottom: 20px;">İstediğiniz satış fiyatını seçin.</p>
+                    
+                    <div class="steam-sell-row">
+                        <div class="steam-sell-col">
+                            <label for="sell-receive">Sizin Alacağınız</label>
+                            <div class="price-input-wrap">
+                                <input id="sell-receive" type="number" min="0" step="0.01" placeholder="0.00" oninput="handleReceiveInput()">
+                                <span>&#8378;</span>
+                            </div>
+                        </div>
+                        <div class="steam-sell-col">
+                            <label for="sell-price">Alıcının Ödeyeceği</label>
+                            <div class="price-input-wrap">
+                                <input id="sell-price" type="number" min="0" step="0.01" placeholder="0.00" oninput="handlePriceInput()">
+                                <span>&#8378;</span>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <div id="receive-amount-info" style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                        İşlemlerden <span style="color: var(--accent-blue); font-weight: 700;">%3 komisyon</span> kesilir.
+                    </div>
+                    
                     <div class="modal-actions">
                         <button class="btn-inspect" onclick="closeSellModal()">İptal</button>
                         <button class="btn-buy btn-sell" onclick="submitSellListing(this)">İlan Oluştur</button>
@@ -217,14 +230,39 @@ function openSellModal(id) {
     if (!item) return;
 
     const modal = document.getElementById('sell-modal');
-    const input = document.getElementById('sell-price');
+    const receiveInput = document.getElementById('sell-receive');
+    const priceInput = document.getElementById('sell-price');
+    
     document.getElementById('sell-modal-item').textContent = `${item.name} - Piyasa ortalaması ${item.estPrice.toFixed(2)} ₺`;
-    input.value = item.estPrice.toFixed(2);
-    input.dataset.itemId = item.id;
+    
+    priceInput.value = item.estPrice.toFixed(2);
+    priceInput.dataset.itemId = item.id;
+    receiveInput.value = (item.estPrice * 0.97).toFixed(2);
+    
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-    input.focus();
+    priceInput.focus();
 }
+
+window.handleReceiveInput = function() {
+    const receiveInput = document.getElementById('sell-receive');
+    const priceInput = document.getElementById('sell-price');
+    if (!receiveInput || !priceInput) return;
+    
+    const receive = Number(receiveInput.value) || 0;
+    const price = receive / 0.97;
+    priceInput.value = receive > 0 ? price.toFixed(2) : '';
+};
+
+window.handlePriceInput = function() {
+    const receiveInput = document.getElementById('sell-receive');
+    const priceInput = document.getElementById('sell-price');
+    if (!receiveInput || !priceInput) return;
+    
+    const price = Number(priceInput.value) || 0;
+    const receive = price * 0.97;
+    receiveInput.value = price > 0 ? receive.toFixed(2) : '';
+};
 
 function closeSellModal() {
     const modal = document.getElementById('sell-modal');

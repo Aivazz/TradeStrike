@@ -12,7 +12,7 @@ async function handleTradeRoute(req, res, pathname, searchParams) {
             currentUser = await userService.getCurrentUser(token);
         }
     } catch (error) {
-        return sendRouteError(res, error, 'Unauthorized');
+        return sendRouteError(res, error, 'Yetkisiz erişim');
     }
 
     if (req.method === 'GET' && pathname === '/api/trades') {
@@ -21,7 +21,7 @@ async function handleTradeRoute(req, res, pathname, searchParams) {
             const result = await tradeService.getTrades(tab, currentUser.id);
             return sendJson(res, 200, { data: result });
         } catch (error) {
-            return sendRouteError(res, error, 'Unexpected trade error');
+            return sendRouteError(res, error, 'Beklenmedik takas hatası');
         }
     }
 
@@ -37,7 +37,7 @@ async function handleTradeRoute(req, res, pathname, searchParams) {
             );
             return sendJson(res, 201, { data: trade });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to create trade');
+            return sendRouteError(res, error, 'Takas oluşturulamadı');
         }
     }
 
@@ -50,13 +50,19 @@ async function handleTradeRoute(req, res, pathname, searchParams) {
             if (action === 'counter') {
                 body = await readJsonBody(req);
             }
+            let actionTr = action;
+            if (action === 'accept') actionTr = 'kabul edildi';
+            else if (action === 'decline') actionTr = 'reddedildi';
+            else if (action === 'cancel') actionTr = 'iptal edildi';
+            else if (action === 'counter') actionTr = 'karşı teklif sunuldu';
+
             const trade = await runTradeAction(tradeId, action, currentUser.id, body.itemIds);
             return sendJson(res, 200, {
-                message: `Trade ${action} completed`,
+                message: `Takas işlemi ${actionTr} olarak tamamlandı`,
                 data: trade
             });
         } catch (error) {
-            return sendRouteError(res, error, 'Unexpected trade action error');
+            return sendRouteError(res, error, 'Beklenmedik takas işlemi hatası');
         }
     }
 

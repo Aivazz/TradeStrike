@@ -62,7 +62,7 @@ async function renderFriendsList() {
 
                     <div class="friends-modal-body">
                         <div class="modal-form-group">
-                            <label for="friend-search-input" class="modal-form-label">Kullanıcı adına göre ara (sadece çevrimiçi)</label>
+                            <label for="friend-search-input" class="modal-form-label">Kullanıcı adına göre ara</label>
                             <div class="friend-search-input-wrap">
                                 <i class="bi bi-search"></i>
                                 <input id="friend-search-input" type="text" class="modal-form-control" 
@@ -166,7 +166,7 @@ function renderFriendCard(friend) {
     const color = getAvatarColor(name);
 
     return `
-        <div class="friend-card ${isOnline ? 'online' : 'offline'}" data-friend-id="${friend.id}">
+        <div class="friend-card ${isOnline ? 'online' : 'offline'}" data-friend-id="${friend.id}" onclick="event.target.closest('.remove-friend-btn') ? null : openFriendInventoryModal(${friend.id}, '${name.replace(/'/g, "\\'")}')" style="cursor: pointer;">
             <div class="friend-avatar-wrapper" style="--avatar-bg:${color};">
                 <div class="friend-avatar">${initials}</div>
                 <span class="status-indicator-dot"></span>
@@ -328,22 +328,24 @@ window.debouncedFriendSearch = function(query) {
             const res = await apiFriendsSearch(query);
             const users = res.data || [];
             if (users.length === 0) {
-                results.innerHTML = '<p class="search-hint">Kimse bulunamadı (sadece çevrimiçi kullanıcılar)</p>';
+                results.innerHTML = '<p class="search-hint">Kimse bulunamadı</p>';
                 return;
             }
             results.innerHTML = users.map(u => {
                 const name = u.displayName || u.username;
                 const initials = name.substring(0, 2).toUpperCase();
                 const color = getAvatarColor(name);
+                const statusColor = u.isOnline ? '#5cbf3f' : '#8c98a5';
+                const statusText = u.isOnline ? 'Çevrimiçi' : 'Çevrimdışı';
                 return `
                     <div class="search-result-row">
                         <div class="friend-avatar-wrapper" style="--avatar-bg:${color}; width:36px; height:36px;">
                             <div class="friend-avatar" style="font-size:12px;">${initials}</div>
-                            <span class="status-indicator-dot" style="background:#5cbf3f;"></span>
+                            <span class="status-indicator-dot" style="background:${statusColor};"></span>
                         </div>
                         <div class="friend-info">
                             <h4 class="friend-name" style="font-size:14px;">${name}</h4>
-                            <p class="friend-status-text" style="color:#5cbf3f; font-size:11px;">Çevrimiçi</p>
+                            <p class="friend-status-text" style="color:${statusColor}; font-size:11px;">${statusText}</p>
                         </div>
                         <button class="btn-friends-action add-btn" style="padding:0 12px; height:30px; font-size:12px; margin:0;"
                             onclick="handleSendRequest(${u.id}, this)">
@@ -369,3 +371,186 @@ window.handleSendRequest = async function(targetUserId, btn) {
         btn.innerHTML = '<i class="bi bi-person-plus"></i> Ekle';
     }
 };
+
+window.openFriendInventoryModal = async function(friendId, friendName) {
+    let modal = document.getElementById('friend-inventory-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'friend-inventory-modal';
+        modal.className = 'modal-backdrop';
+        modal.onclick = function(e) {
+            if (e.target.id === 'friend-inventory-modal') {
+                window.closeFriendInventoryModal();
+            }
+        };
+        modal.innerHTML = `
+            <div class="friend-inventory-modal-card" role="dialog" aria-modal="true">
+                <button class="modal-close" onclick="window.closeFriendInventoryModal()" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+                <h2 id="friend-inventory-title"></h2>
+                <div id="friend-inventory-modal-body">
+                    <div class="state-panel">Envanter yükleniyor...</div>
+                </div>
+            </div>
+            <style>
+                .friend-inventory-modal-card {
+                    position: relative;
+                    width: min(840px, 95%);
+                    max-height: 85vh;
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
+                    border-radius: 16px;
+                    padding: 28px 24px;
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+                    animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                #friend-inventory-modal-body {
+                    flex: 1;
+                    overflow-y: auto;
+                    margin-top: 16px;
+                    padding-right: 4px;
+                }
+                #friend-inventory-modal-body::-webkit-scrollbar {
+                    width: 6px;
+                }
+                #friend-inventory-modal-body::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                #friend-inventory-modal-body::-webkit-scrollbar-thumb {
+                    background: var(--border-color);
+                    border-radius: 4px;
+                }
+                .friend-inventory-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+                    gap: 16px;
+                }
+                .friend-inventory-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    border-bottom: 1px solid var(--border-color);
+                    padding-bottom: 12px;
+                    margin-bottom: 16px;
+                }
+                .friend-inventory-header span {
+                    font-size: 13px;
+                    color: var(--text-muted);
+                }
+                .friend-inventory-header strong {
+                    color: var(--accent-green);
+                    font-size: 16px;
+                }
+            </style>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    document.getElementById('friend-inventory-title').textContent = `${friendName} Envanteri`;
+    const body = document.getElementById('friend-inventory-modal-body');
+    body.innerHTML = '<div class="state-panel">Envanter yükleniyor...</div>';
+    
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+
+    try {
+        const response = await getInventory(friendId);
+        
+        let actualItems = [];
+        if (response.data && Array.isArray(response.data.items)) {
+            actualItems = response.data.items;
+        } else if (response.data && response.data.items && Array.isArray(response.data.items.items)) {
+            actualItems = response.data.items.items;
+        } else if (Array.isArray(response.data)) {
+            actualItems = response.data;
+        }
+
+        if (actualItems.length === 0) {
+            body.innerHTML = `
+                <div class="state-panel">
+                    <i class="bi bi-box-seam" style="font-size: 32px; color: var(--text-muted); margin-bottom: 8px;"></i>
+                    <span style="color: #ffffff; font-weight: 600;">Envanter boş</span>
+                    <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Bu kullanıcının envanterinde eşya bulunmuyor.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const totalItemsCount = actualItems.length;
+        const estimatedValue = actualItems.reduce((sum, item) => sum + (item.estPrice || 0), 0);
+
+        const cardsHTML = actualItems.map(item => {
+            const nameParts = item.name.split('|');
+            const weaponName = nameParts[0] ? nameParts[0].trim() : item.name;
+            const skinName = nameParts[1] ? nameParts[1].trim() : '';
+            const isStatTrak = weaponName.includes('StatTrak™') || weaponName.includes('StatTrak');
+            const cleanWeaponName = weaponName.replace('StatTrak™', '').replace('StatTrak', '').trim();
+            const condDetails = getConditionDetails(item.condition);
+            const floatValue = Number(item.float) || 0;
+
+            return `
+                <article class="item-card inventory-card" style="--rarity-color: ${item.rarity || '#4b69ff'}; min-height: auto; margin-bottom: 0;">
+                    <div class="item-image-wrapper">
+                        <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}">
+                        ${isStatTrak ? '<span class="stattrak-badge">StatTrak™</span>' : ''}
+                    </div>
+                    <div class="item-body">
+                        <div class="weapon-info">
+                            <span class="weapon-type">${cleanWeaponName}</span>
+                            <span class="weapon-skin">${skinName}</span>
+                        </div>
+                        <div class="condition-info">
+                            <span class="cond-abbr">${condDetails.abbr}</span>
+                            <span class="cond-ru">${condDetails.ru}</span>
+                        </div>
+                        <div class="wear-bar-container">
+                            <div class="wear-bar">
+                                <div class="wear-segment fn" style="width: 7%;"></div>
+                                <div class="wear-segment mw" style="width: 8%;"></div>
+                                <div class="wear-segment ft" style="width: 23%;"></div>
+                                <div class="wear-segment ww" style="width: 7%;"></div>
+                                <div class="wear-segment bs" style="width: 55%;"></div>
+                                <div class="wear-marker" style="left: ${floatValue * 100}%;"></div>
+                            </div>
+                            <span class="wear-value">${floatValue.toFixed(4)}</span>
+                        </div>
+                    </div>
+                    <div class="inventory-price-row" style="padding: 10px 0;">
+                        <span>Tahmini Fiyat</span>
+                        <strong>${item.estPrice.toFixed(2)} &#8378;</strong>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        body.innerHTML = `
+            <div class="friend-inventory-header">
+                <span>Eşya Sayısı: <strong>${totalItemsCount}</strong></span>
+                <span>Envanter Değeri: <strong>${estimatedValue.toFixed(2)} ₺</strong></span>
+            </div>
+            <div class="friend-inventory-grid">
+                ${cardsHTML}
+            </div>
+        `;
+    } catch (error) {
+        body.innerHTML = `
+            <div class="state-panel error-state">${error.message}</div>
+        `;
+    }
+};
+
+window.closeFriendInventoryModal = function() {
+    const modal = document.getElementById('friend-inventory-modal');
+    if (modal) {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+};
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        window.closeFriendInventoryModal();
+    }
+});
+

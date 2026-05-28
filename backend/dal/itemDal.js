@@ -12,6 +12,8 @@ async function getItemsForSale() {
     const [rows] = await db.execute('CALL sp_GetItemsForSale()');
     return rows[0].map(row => ({
         ...row,
+        imageUrl: row.imageUrl || row.imageurl || row.image_url,
+        condition: row.itemCondition || row.item_condition || row.condition,
         price: Number(row.price || 0),
         estPrice: Number(row.estPrice || 0),
         float: row.float ? Number(row.float) : null
@@ -28,10 +30,12 @@ async function findItemById(id) {
     const row = rows[0][0];
     return {
         ...row,
+        imageUrl: row.imageUrl || row.imageurl || row.image_url,
+        condition: row.itemCondition || row.item_condition || row.condition,
         price: Number(row.price || 0),
         estPrice: Number(row.estPrice || 0),
         float: row.float ? Number(row.float) : null,
-        inventoryItemId: row.inventoryItemId || row.inventory_item_id
+        inventoryItemId: row.inventoryItemId || row.inventory_item_id || row.inventory_id
     };
 }
 
@@ -39,30 +43,50 @@ async function markItemAsSold(id, newOwnerId) {
     const item = await findItemById(id);
     if (!item) return null;
 
-    // Вызываем процедуру, которая делает и удаление из маркета, и апдейт инвентаря
-    await db.execute('CALL sp_MarkItemAsSold(?, ?)', [id, newOwnerId]);
+    // 1. Удаляем запись из маркетплейса через хранимую процедуру
+    await db.execute('CALL sp_DeleteMarketItem(?)', [id]);
+
+    // 2. Переводим скин новому владельцу через хранимую процедуру
+    const inventoryId = item.inventoryItemId;
+    if (inventoryId) {
+        await db.execute('CALL sp_TransferMarketSale(?, ?)', [newOwnerId, inventoryId]);
+    }
 
     const purchaseId = `PUR-${Date.now()}`;
     return { purchaseId, item };
 }
 
 async function getInventoryItems(ownerId) {
-    const [rows] = await db.execute('CALL sp_GetInventoryItems(?)', [ownerId]);
-    return rows[0].map(row => ({
+    const [rows] = await db.execute('CALL sp_GetInventoryByOwner(?)', [ownerId]);
+    const items = rows[0];
+
+    console.log(`\n[VT LOG] ${ownerId} kullanıcısı için toplam ${items.length} eşya getirildi`);
+    if (items.length > 0) {
+        console.log(`[VT LOG] İlk eşyanın resim bağlantısı: ${items[0].imageUrl}`);
+    } else {
+        console.log(`[VT LOG] Hiç eşya bulunamadı!`);
+    }
+
+    return items.map(row => ({
         ...row,
-        estPrice: Number(row.estPrice || 0),
-        float: row.float ? Number(row.float) : null
+        imageUrl: row.imageUrl || row.imageurl || row.image_url,
+        condition: row.itemCondition || row.item_condition || row.itemcondition || row.condition,
+        estPrice: Number(row.estPrice || row.est_price || 0),
+        float: row.float !== undefined ? Number(row.float) : (row.float_value ? Number(row.float_value) : null)
     }));
 }
 
 async function findInventoryItemById(id, ownerId) {
-    const [rows] = await db.execute('CALL sp_GetInventoryItemById(?, ?)', [id, ownerId]);
+    const [rows] = await db.execute('CALL sp_GetInventoryItemByOwner(?, ?)', [id, ownerId]);
     if (rows[0].length === 0) return null;
+
     const row = rows[0][0];
     return {
         ...row,
-        estPrice: Number(row.estPrice || 0),
-        float: row.float ? Number(row.float) : null
+        imageUrl: row.imageUrl || row.imageurl || row.image_url,
+        condition: row.itemCondition || row.item_condition || row.itemcondition || row.condition,
+        estPrice: Number(row.estPrice || row.est_price || 0),
+        float: row.float !== undefined ? Number(row.float) : (row.float_value ? Number(row.float_value) : null)
     };
 }
 
@@ -90,6 +114,8 @@ async function getFavoriteItems(userId) {
     const [rows] = await db.execute('CALL sp_GetFavoriteItems(?)', [userId]);
     return rows[0].map(row => ({
         ...row,
+        imageUrl: row.imageUrl || row.imageurl || row.image_url,
+        condition: row.itemCondition || row.item_condition || row.condition,
         price: Number(row.price || 0),
         estPrice: Number(row.estPrice || 0),
         float: row.float ? Number(row.float) : null
@@ -99,7 +125,6 @@ async function getFavoriteItems(userId) {
 async function transferInventoryItems(itemIds, fromUserId, toUserId) {
     if (!itemIds || itemIds.length === 0) return;
 
-    // Передаем предметы по одному через хранимую процедуру
     for (const itemId of itemIds) {
         await db.execute('CALL sp_TransferSingleInventoryItem(?, ?, ?)', [itemId, fromUserId, toUserId]);
     }

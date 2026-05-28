@@ -177,7 +177,7 @@ async function goToGiveItems() {
                 ${myItems.length > 0 ? myItems.map(item => `
                     <div class="user-select-item" id="trade-give-${item.id}" onclick="toggleGiveItem(${item.id})" style="flex-direction: column; padding: 12px;">
                         <div class="trade-item-image" style="width: 100%; height: 80px; border-bottom: 2px solid ${item.rarity}; display:flex; justify-content:center; align-items:center; background:radial-gradient(circle at center, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%); border-radius:8px;">
-                            <img src="${item.imageUrl}" style="max-height: 80%; max-width: 90%; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));">
+                            <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, 'trade', ${item.id})" style="max-height: 80%; max-width: 90%; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));">
                         </div>
                         <div class="user-select-info mt-2 text-center" style="width: 100%;">
                             <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">${item.name}</h4>
@@ -187,9 +187,7 @@ async function goToGiveItems() {
             </div>
             <div class="modal-actions border-top mt-4 pt-4" style="border-color: var(--border-soft) !important;">
                 <button class="btn-inspect" onclick="openTradeBuilder()">Geri</button>
-                <button class="btn-buy btn-sell" id="btn-next-step" disabled onclick="${isGiftModeActive ? 'finalizeTradeOffer()' : 'goToReceiveItems()'}">
-                    ${isGiftModeActive ? 'Hediye Gönder' : 'Devam Et'}
-                </button>
+                <button class="btn-buy btn-sell" id="btn-next-step" disabled onclick="finalizeTradeOffer()">Teklif Gönder</button>
             </div>
         `;
     } catch (error) {
@@ -295,7 +293,7 @@ async function goToReceiveItems() {
                 ${theirItems.length > 0 ? theirItems.map(item => `
                     <div class="user-select-item" id="trade-receive-${item.id}" onclick="toggleReceiveItem(${item.id})" style="flex-direction: column; padding: 12px;">
                         <div class="trade-item-image" style="width: 100%; height: 80px; border-bottom: 3px solid ${item.rarity}; display:flex; justify-content:center; align-items:center; background:#29384d; border-radius:8px;">
-                            <img src="${item.imageUrl}" style="max-height: 80%; max-width: 90%;">
+                            <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, 'trade', ${item.id})" style="max-height: 80%; max-width: 90%;">
                         </div>
                         <div class="user-select-info mt-2 text-center" style="width: 100%;">
                             <h4 style="font-size: 14px;">${item.name}</h4>
@@ -432,10 +430,29 @@ function translateStatus(status) {
 }
 
 function renderMiniTradeItem(item) {
+    const cleanImageUrl = item.imageUrl ? getImageUrl(item.imageUrl) : '';
+    const imgId = `mini-trade-img-${Math.random().toString(36).substr(2, 9)}`;
+    
+    if (!cleanImageUrl) {
+        setTimeout(async () => {
+            const el = document.getElementById(imgId);
+            if (el) {
+                try {
+                    const fallbackSrc = await getFallbackImage(item.name);
+                    if (fallbackSrc) {
+                        el.src = fallbackSrc;
+                        return;
+                    }
+                } catch (e) {}
+                replaceImgWithInitials(el, item.name);
+            }
+        }, 0);
+    }
+
     return `
         <div class="trade-item" style="border-left-color: ${item.rarity};">
             <div class="trade-item-image">
-                <span>${item.name.split(' ')[0]}</span>
+                <img id="${imgId}" src="${cleanImageUrl || 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%221%22 height%3D%221%22%2F%3E'}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="handleMiniTradeImageError(this, '${item.name.replace(/'/g, "\\'")}')">
             </div>
             <div>
                 <h3>${item.name}</h3>
@@ -487,5 +504,26 @@ async function inspectTrade(id) {
         alert(`Takas #${trade.id}\nDurum: ${translateStatus(trade.status)}`);
     } catch (error) {
         alert(error.message);
+    }
+}
+
+async function handleMiniTradeImageError(img, itemName) {
+    try {
+        const fallbackSrc = await getFallbackImage(itemName);
+        if (fallbackSrc) {
+            img.src = fallbackSrc;
+            img.onerror = () => {
+                replaceImgWithInitials(img, itemName);
+            };
+            return;
+        }
+    } catch (e) {}
+    replaceImgWithInitials(img, itemName);
+}
+
+function replaceImgWithInitials(img, itemName) {
+    const parent = img.parentElement;
+    if (parent) {
+        parent.innerHTML = `<span>${itemName.split(' ')[0]}</span>`;
     }
 }

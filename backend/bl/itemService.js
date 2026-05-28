@@ -10,7 +10,20 @@ async function getTrendingItems() {
     return itemDal.getTrendingItems(); // синхронный — await не нужен, но не мешает
 }
 
-async function getUserInventory(userId) {
+async function getUserInventory(userId, requesterId = null) {
+    const user = await userDal.findUserById(userId);
+    if (!user) {
+        const error = new Error('Kullanıcı bulunamadı');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    if (user.is_inventory_private && userId !== requesterId) {
+        const error = new Error('Bu kullanıcının envanteri gizlidir.');
+        error.statusCode = 403;
+        throw error;
+    }
+
     const items = await itemDal.getInventoryItems(userId);
     const totalValue = items.reduce((sum, item) => sum + (Number(item.estPrice) || Number(item.price) || 0), 0);
 
@@ -24,7 +37,7 @@ async function getUserInventory(userId) {
 async function getInventoryItem(id, userId) {
     const item = await itemDal.findInventoryItemById(id, userId);
     if (!item) {
-        const error = new Error('Inventory item not found');
+        const error = new Error('Envanter eşyası bulunamadı');
         error.statusCode = 404;
         throw error;
     }
@@ -35,7 +48,7 @@ async function buyMarketplaceItem(id, buyerId) {
     const item = await itemDal.findItemById(id);
 
     if (!item || item.status !== 'listed') {
-        const error = new Error('Item is not available for purchase');
+        const error = new Error('Eşya satın alınabilir durumda değil');
         error.statusCode = 409;
         throw error;
     }
@@ -43,7 +56,7 @@ async function buyMarketplaceItem(id, buyerId) {
     const buyer = await userDal.findUserById(buyerId);
 
     if (buyer.balance < item.price) {
-        const error = new Error(`Insufficient balance. You need ${item.price} \u20BA`);
+        const error = new Error(`Yetersiz bakiye. ${item.price} \u20BA değerinde bakiyeye ihtiyacınız var.`);
         error.statusCode = 400;
         throw error;
     }
@@ -51,7 +64,10 @@ async function buyMarketplaceItem(id, buyerId) {
     await userDal.updateUserBalance(buyer.id, -item.price);
 
     if (item.ownerId && item.ownerId !== buyer.id) {
-        await userDal.updateUserBalance(item.ownerId, item.price);
+        const commissionRate = 0.03; // 3% commission
+        const sellerEarnings = item.price * (1 - commissionRate);
+        const roundedEarnings = Math.round(sellerEarnings * 100) / 100;
+        await userDal.updateUserBalance(item.ownerId, roundedEarnings);
     }
 
     return itemDal.markItemAsSold(id, buyer.id);
@@ -60,7 +76,7 @@ async function buyMarketplaceItem(id, buyerId) {
 async function listInventoryItemForSale(id, price, userId) {
     const item = await itemDal.listInventoryItemForSale(id, price, userId);
     if (!item) {
-        const error = new Error('Item not found in inventory');
+        const error = new Error('Eşya envanterde bulunamadı');
         error.statusCode = 404;
         throw error;
     }

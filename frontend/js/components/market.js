@@ -56,16 +56,7 @@ function displayMarket() {
 
     // Применяем фильтр по конкретному оружию (например, "AWP")
     if (window.currentFilters && window.currentFilters.selectedWeapons && window.currentFilters.selectedWeapons.length > 0) {
-        items = items.filter(item => {
-            const nameLower = item.name.toLowerCase();
-            return window.currentFilters.selectedWeapons.some(w => {
-                const wLower = w.toLowerCase();
-                if (wLower === 'bayonet') {
-                    return nameLower.includes('bayonet') && !nameLower.includes('m9');
-                }
-                return nameLower.includes(wLower);
-            });
-        });
+        items = items.filter(item => window.matchesSelectedWeapons(item.name, window.currentFilters.selectedWeapons));
     }
 
     // Применяем фильтр по качеству/состоянию (Condition)
@@ -116,7 +107,7 @@ function displayMarket() {
             <div class="market-col">
                 <article class="item-card" style="--rarity-color: ${item.rarity || '#4b69ff'};">
                     <div class="item-image-wrapper" style="cursor: pointer;" onclick="openMarketInspect(${item.id})">
-                        <img src="${item.imageUrl}" alt="${item.name}">
+                        <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, 'market', ${item.id})">
                         ${isStatTrak ? '<span class="stattrak-badge">StatTrak™</span>' : ''}
                     </div>
                     <div class="item-body" style="cursor: pointer;" onclick="openMarketInspect(${item.id})">

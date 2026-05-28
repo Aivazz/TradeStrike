@@ -55,6 +55,11 @@ async function deleteUser(id) {
     return true;
 }
 
+async function updateInventoryPrivacy(id, isPrivate) {
+    await db.execute('CALL sp_UpdateInventoryPrivacy(?, ?)', [id, isPrivate ? 1 : 0]);
+    return true;
+}
+
 module.exports = {
     findUserByUsername,
     findUserById,
@@ -65,5 +70,6 @@ module.exports = {
     updateUserPassword,
     updateUserEmail,
     setOnlineStatus,
-    deleteUser
+    deleteUser,
+    updateInventoryPrivacy
 };

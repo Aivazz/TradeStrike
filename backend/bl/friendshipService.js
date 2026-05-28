@@ -5,7 +5,7 @@ const userDal = require('../dal/userDal');
 // Get confirmed friends list (with online status)
 async function getFriends(token, sessions) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
 
     const friends = await friendshipDal.getFriends(userId);
     return friends.map(f => ({
@@ -21,7 +21,7 @@ async function getFriends(token, sessions) {
 // Get incoming pending friend requests
 async function getIncomingRequests(token, sessions) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
 
     const requests = await friendshipDal.getIncomingRequests(userId);
     return requests.map(r => ({
@@ -37,17 +37,15 @@ async function getIncomingRequests(token, sessions) {
 // Uses the live sessions Map (not DB column) as the real source of truth for who is online
 async function searchOnlineUsers(token, sessions, query) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
     if (!query || query.trim().length < 1) return [];
 
-    // All currently logged-in user IDs except the requester
-    const onlineUserIds = [...sessions.values()].filter(id => id !== userId);
-
-    const users = await friendshipDal.searchOnlineUsers(query.trim(), userId, onlineUserIds);
+    const users = await friendshipDal.searchOnlineUsers(query.trim(), userId);
     return users.map(u => ({
         id: u.id,
         username: u.username,
         displayName: u.displayName || u.username,
+        isOnline: !!u.isOnline,
         initials: (u.displayName || u.username).substring(0, 2).toUpperCase()
     }));
 }
@@ -55,45 +53,44 @@ async function searchOnlineUsers(token, sessions, query) {
 // Send a friend request
 async function sendRequest(token, sessions, targetUserId) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
-    if (userId === targetUserId) throw Object.assign(new Error('Cannot add yourself'), { statusCode: 400 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
+    if (userId === targetUserId) throw Object.assign(new Error('Kendinizi arkadaş olarak ekleyemezsiniz'), { statusCode: 400 });
 
     const existing = await friendshipDal.getFriendship(userId, targetUserId);
-    if (existing) throw Object.assign(new Error('Friendship already exists'), { statusCode: 409 });
+    if (existing) throw Object.assign(new Error('Arkadaşlık ilişkisi zaten mevcut'), { statusCode: 409 });
 
     const target = await userDal.findUserById(targetUserId);
-    if (!target) throw Object.assign(new Error('User not found'), { statusCode: 404 });
-    if (!target.is_online) throw Object.assign(new Error('User is not online'), { statusCode: 400 });
+    if (!target) throw Object.assign(new Error('Kullanıcı bulunamadı'), { statusCode: 404 });
 
     await friendshipDal.createFriendship(userId, targetUserId);
-    return { message: `Friend request sent to ${target.username}` };
+    return { message: `Arkadaşlık isteği ${target.username} kullanıcısına gönderildi` };
 }
 
 // Accept a pending request
 async function acceptRequest(token, sessions, friendshipId) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
 
     await friendshipDal.updateFriendshipStatus(friendshipId, 'accepted');
-    return { message: 'Friend request accepted' };
+    return { message: 'Arkadaşlık isteği kabul edildi' };
 }
 
 // Decline a pending request
 async function declineRequest(token, sessions, friendshipId) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
 
     await friendshipDal.updateFriendshipStatus(friendshipId, 'declined');
-    return { message: 'Friend request declined' };
+    return { message: 'Arkadaşlık isteği reddedildi' };
 }
 
 // Remove a friend
 async function removeFriend(token, sessions, targetUserId) {
     const userId = sessions.get(token);
-    if (!userId) throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error('Yetkisiz erişim'), { statusCode: 401 });
 
     await friendshipDal.deleteFriendshipByUsers(userId, targetUserId);
-    return { message: 'Friend removed' };
+    return { message: 'Arkadaş çıkarıldı' };
 }
 
 module.exports = {

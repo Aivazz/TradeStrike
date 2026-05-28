@@ -8,7 +8,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
         try {
             return sendJson(res, 200, { data: await itemService.getMarketplaceItems() });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to fetch market items');
+            return sendRouteError(res, error, 'Pazaryeri eşyaları getirilemedi');
         }
     }
 
@@ -16,7 +16,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
         try {
             return sendJson(res, 200, { data: await itemService.getTrendingItems() });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to fetch trending items');
+            return sendRouteError(res, error, 'Popüler eşyalar getirilemedi');
         }
     }
 
@@ -26,9 +26,9 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             const token = getBearerToken(req);
             const buyer = await userService.getCurrentUser(token);
             const purchase = await itemService.buyMarketplaceItem(Number(buyMatch[1]), buyer.id);
-            return sendJson(res, 200, { message: 'Purchase completed', data: purchase });
+            return sendJson(res, 200, { message: 'Satın alma tamamlandı', data: purchase });
         } catch (error) {
-            return sendRouteError(res, error, 'Unexpected marketplace error');
+            return sendRouteError(res, error, 'Beklenmedik pazaryeri hatası');
         }
     }
 
@@ -37,9 +37,9 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             const token = getBearerToken(req);
             const currentUser = await userService.getCurrentUser(token);
             const userId = searchParams.get('userId') ? Number(searchParams.get('userId')) : currentUser.id;
-            return sendJson(res, 200, { data: await itemService.getUserInventory(userId) });
+            return sendJson(res, 200, { data: await itemService.getUserInventory(userId, currentUser.id) });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to fetch inventory');
+            return sendRouteError(res, error, 'Envanter getirilemedi');
         }
     }
 
@@ -51,7 +51,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             const item = await itemService.getInventoryItem(Number(inventoryItemMatch[1]), currentUser.id);
             return sendJson(res, 200, { data: item });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to fetch inventory item');
+            return sendRouteError(res, error, 'Envanter eşyası getirilemedi');
         }
     }
 
@@ -68,7 +68,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             );
             return sendJson(res, 201, { data: item });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to create listing');
+            return sendRouteError(res, error, 'Satış ilanı oluşturulamadı');
         }
     }
 
@@ -79,7 +79,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             const items = await itemService.getFavoriteItems(currentUser.id);
             return sendJson(res, 200, { data: items });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to fetch favorites');
+            return sendRouteError(res, error, 'Favoriler getirilemedi');
         }
     }
 
@@ -91,7 +91,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             const result = await itemService.addFavoriteItem(currentUser.id, Number(body.marketItemId));
             return sendJson(res, 201, result);
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to add to favorites');
+            return sendRouteError(res, error, 'Favorilere eklenemedi');
         }
     }
 
@@ -103,7 +103,7 @@ async function handleItemRoute(req, res, pathname, searchParams) {
             const result = await itemService.removeFavoriteItem(currentUser.id, Number(favMatch[1]));
             return sendJson(res, 200, result);
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to remove from favorites');
+            return sendRouteError(res, error, 'Favorilerden kaldırılamadı');
         }
     }
 

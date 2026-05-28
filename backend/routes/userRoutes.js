@@ -8,7 +8,7 @@ async function handleUserRoute(req, res, pathname) {
             const result = await userService.login(body.username, body.password);
             return sendJson(res, 200, { data: result });
         } catch (error) {
-            return sendRouteError(res, error, 'Login failed');
+            return sendRouteError(res, error, 'Giriş başarısız');
         }
     }
 
@@ -18,7 +18,7 @@ async function handleUserRoute(req, res, pathname) {
             const result = await userService.register(body.username, body.password);
             return sendJson(res, 201, { data: result });
         } catch (error) {
-            return sendRouteError(res, error, 'Registration failed');
+            return sendRouteError(res, error, 'Kayıt başarısız');
         }
     }
 
@@ -28,7 +28,7 @@ async function handleUserRoute(req, res, pathname) {
             const user = await userService.getCurrentUser(token);
             return sendJson(res, 200, { data: user });
         } catch (error) {
-            return sendRouteError(res, error, 'Unauthorized');
+            return sendRouteError(res, error, 'Yetkisiz erişim');
         }
     }
 
@@ -44,7 +44,7 @@ async function handleUserRoute(req, res, pathname) {
             const users = await userService.getUsersForTrade(token);
             return sendJson(res, 200, { data: users });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to fetch users');
+            return sendRouteError(res, error, 'Kullanıcılar getirilemedi');
         }
     }
 
@@ -55,7 +55,7 @@ async function handleUserRoute(req, res, pathname) {
             const updatedUser = await userService.updateSettings(token, body);
             return sendJson(res, 200, { data: updatedUser });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to update settings');
+            return sendRouteError(res, error, 'Ayarlar güncellenemedi');
         }
     }
 
@@ -65,14 +65,14 @@ async function handleUserRoute(req, res, pathname) {
             const body = await readJsonBody(req);
             const amount = Number(body.amount);
             if (isNaN(amount) || amount <= 0) {
-                const err = new Error('Invalid deposit amount');
+                const err = new Error('Geçersiz para yatırma tutarı');
                 err.statusCode = 400;
                 throw err;
             }
             const updatedUser = await userService.depositBalance(token, amount);
             return sendJson(res, 200, { data: updatedUser });
         } catch (error) {
-            return sendRouteError(res, error, 'Deposit failed');
+            return sendRouteError(res, error, 'Para yatırma başarısız');
         }
     }
 
@@ -82,7 +82,7 @@ async function handleUserRoute(req, res, pathname) {
             await userService.deleteAccount(token);
             return sendJson(res, 200, { data: { success: true } });
         } catch (error) {
-            return sendRouteError(res, error, 'Failed to delete account');
+            return sendRouteError(res, error, 'Hesap silinemedi');
         }
     }
 

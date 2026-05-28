@@ -20,9 +20,9 @@ function renderMarketplaceView() {
     renderMarket();
 }
 
-function renderInventoryView() {
+function renderInventoryView(userId = null, username = '') {
     setActiveNav('inventory');
-    renderTopbar('Envanterim');
+    renderTopbar(userId ? `${username} Envanteri` : 'Envanterim');
     document.getElementById('trending-root').style.display = 'none';
     document.getElementById('market-root').style.display = 'none';
     document.getElementById('inventory-root').style.display = '';
@@ -30,7 +30,7 @@ function renderInventoryView() {
     document.getElementById('settings-root').style.display = 'none';
     document.getElementById('favorites-root').style.display = 'none';
     document.getElementById('friends-root').style.display = 'none';
-    renderInventory();
+    renderInventory(userId, username);
 }
 
 function renderTradeOffersView() {
@@ -134,7 +134,83 @@ window.renderFavoritesList = async function() {
         return;
     }
 
-    const cardsHTML = favorites.map(item => {
+    let items = [...favorites];
+
+    // Search filter
+    if (window.currentFilters && window.currentFilters.searchQuery) {
+        const q = window.currentFilters.searchQuery.toLowerCase();
+        items = items.filter(item => 
+            item.name.toLowerCase().includes(q) || 
+            (item.condition && item.condition.toLowerCase().includes(q))
+        );
+    }
+
+    // Weapon category filter
+    if (window.currentFilters && window.currentFilters.selectedCategories && window.currentFilters.selectedCategories.length > 0) {
+        items = items.filter(item => {
+            const cat = typeof window.getWeaponCategory === 'function' ? window.getWeaponCategory(item.name) : 'other';
+            return window.currentFilters.selectedCategories.includes(cat);
+        });
+    }
+
+    // Weapon select filter
+    if (window.currentFilters && window.currentFilters.selectedWeapons && window.currentFilters.selectedWeapons.length > 0) {
+        items = items.filter(item => window.matchesSelectedWeapons(item.name, window.currentFilters.selectedWeapons));
+    }
+
+    // Condition filter
+    if (window.currentFilters && window.currentFilters.conditions && window.currentFilters.conditions.length > 0) {
+        items = items.filter(item => window.currentFilters.conditions.includes(item.condition));
+    }
+
+    // Rarity filter
+    if (window.currentFilters && window.currentFilters.rarities && window.currentFilters.rarities.length > 0) {
+        items = items.filter(item => window.currentFilters.rarities.includes(item.rarity));
+    }
+
+    // Min Price filter
+    if (window.currentFilters && window.currentFilters.minPrice !== '') {
+        const min = Number(window.currentFilters.minPrice);
+        if (!isNaN(min)) {
+            items = items.filter(item => item.price >= min);
+        }
+    }
+
+    // Max Price filter
+    if (window.currentFilters && window.currentFilters.maxPrice !== '') {
+        const max = Number(window.currentFilters.maxPrice);
+        if (!isNaN(max)) {
+            items = items.filter(item => item.price <= max);
+        }
+    }
+
+    // Sort by price
+    if (window.currentFilters && window.currentFilters.sortBy) {
+        if (window.currentFilters.sortBy === 'price-asc') {
+            items.sort((a, b) => a.price - b.price);
+        } else if (window.currentFilters.sortBy === 'price-desc') {
+            items.sort((a, b) => b.price - a.price);
+        }
+    }
+
+    if (items.length === 0) {
+        root.innerHTML = `
+            <section class="market-section">
+                <div class="section-heading items-heading">
+                    <h2>Favoriler</h2>
+                    <span>0 eşya</span>
+                </div>
+                <div class="state-panel">
+                    <i class="bi bi-search" style="font-size: 28px; color: var(--accent-blue); margin-bottom: 4px;"></i>
+                    <span style="color: #ffffff; font-size: 15px; font-weight: 600;">Eşya bulunamadı</span>
+                    <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Filtrelerinizi veya arama sorgunuzu ayarlamayı deneyin.</p>
+                </div>
+            </section>
+        `;
+        return;
+    }
+
+    const cardsHTML = items.map(item => {
         const nameParts = item.name.split('|');
         const weaponName = nameParts[0] ? nameParts[0].trim() : item.name;
         const skinName = nameParts[1] ? nameParts[1].trim() : '';
@@ -147,7 +223,7 @@ window.renderFavoritesList = async function() {
             <div class="market-col">
                 <article class="item-card" style="--rarity-color: ${item.rarity || '#4b69ff'};">
                     <div class="item-image-wrapper" style="cursor: pointer;" onclick="openMarketInspect(${item.id})">
-                        <img src="${item.imageUrl}" alt="${item.name}" onerror="handleInspectImageError(this, 'market', ${item.id})">
+                        <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, 'market', ${item.id})">
                         ${isStatTrak ? '<span class="stattrak-badge">StatTrak™</span>' : ''}
                     </div>
                     <div class="item-body" style="cursor: pointer;" onclick="openMarketInspect(${item.id})">
@@ -184,7 +260,7 @@ window.renderFavoritesList = async function() {
         <section class="market-section">
             <div class="section-heading items-heading">
                 <h2>Favoriler</h2>
-                <span>${favorites.length} eşya</span>
+                <span>${items.length} eşya</span>
             </div>
             <div class="market-grid">
                 ${cardsHTML}
@@ -199,7 +275,6 @@ function setActiveNav(view) {
     });
 }
 
-// Global Item Inspection Modal
 window.openInspectItem = function(item, type = 'market') {
     const modal = document.getElementById('inspect-item-modal');
     const content = document.getElementById('inspect-modal-content');
@@ -257,7 +332,7 @@ window.openInspectItem = function(item, type = 'market') {
         </div>
         <div class="inspect-body">
             <div class="inspect-image-container">
-                <img class="inspect-main-image" src="${item.imageUrl}" alt="${item.name}" onerror="handleInspectImageError(this, '${type}', ${item.id})">
+                <img class="inspect-main-image" src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, '${type}', ${item.id})">
                 ${heartButtonHTML}
             </div>
             <div class="inspect-details">
@@ -339,7 +414,6 @@ window.toggleInspectLike = async function(btn, id) {
         }
         await renderSidebar();
         
-        // If favorites view is active, re-render the favorites list
         const favRoot = document.getElementById('favorites-root');
         if (favRoot && favRoot.style.display !== 'none') {
             renderFavoritesList();
@@ -353,7 +427,6 @@ window.removeFavorite = async function(id) {
     try {
         await deleteFavorite(id);
         
-        // Update inspect modal heart if open for this item
         const inspectModal = document.getElementById('inspect-item-modal');
         if (inspectModal && inspectModal.classList.contains('is-open')) {
             const heartBtn = inspectModal.querySelector('.inspect-heart-btn');
@@ -366,7 +439,6 @@ window.removeFavorite = async function(id) {
         
         await renderSidebar();
         
-        // If favorites view is active, re-render the favorites list
         const favRoot = document.getElementById('favorites-root');
         if (favRoot && favRoot.style.display !== 'none') {
             renderFavoritesList();
@@ -395,9 +467,82 @@ window.handleInspectSell = function(id) {
     openSellModal(id);
 };
 
+let csgoSkinsMap = null;
+async function getFallbackImage(itemName) {
+    const key = itemName.toLowerCase().trim();
+    if (key.includes('gungnir')) {
+        return 'https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdO_WwKG-4xBmDjPRkZGbP_Y-l5F4rE2-5q5d4kP-oJ68hJ_i2T_9TjU_y-Xf59_W2qJtKz1vJ-9qJAA/360fx360f';
+    }
+
+    if (!csgoSkinsMap) {
+        try {
+            const cached = localStorage.getItem('csgo_skins_map');
+            if (cached) {
+                csgoSkinsMap = JSON.parse(cached);
+            }
+        } catch (e) {}
+    }
+
+    if (!csgoSkinsMap) {
+        try {
+            const response = await fetch('https://bymykel.github.io/CSGO-API/api/en/skins.json');
+            const data = await response.json();
+            csgoSkinsMap = {};
+            for (const item of data) {
+                if (item.name && item.image) {
+                    csgoSkinsMap[item.name.toLowerCase().trim()] = item.image;
+                }
+            }
+            try {
+                localStorage.setItem('csgo_skins_map', JSON.stringify(csgoSkinsMap));
+            } catch (e) {}
+        } catch (err) {
+            console.error('Failed to fetch fallback skins database:', err);
+            csgoSkinsMap = {};
+        }
+    }
+
+    if (csgoSkinsMap[key]) {
+        return csgoSkinsMap[key];
+    }
+    
+    const cleanKey = key.replace('stattrak™', '').replace('stattrak', '').split('(')[0].trim();
+    for (const name in csgoSkinsMap) {
+        const cleanName = name.replace('stattrak™', '').replace('stattrak', '').split('(')[0].trim();
+        if (cleanName === cleanKey) {
+            return csgoSkinsMap[name];
+        }
+    }
+
+    return null;
+}
+
 window.handleInspectImageError = function(img, type = 'market', id = null) {
+    if (img.dataset.fallbackAttempted) {
+        renderSvgPlaceholder(img, type, id);
+        return;
+    }
+
+    img.dataset.fallbackAttempted = "true";
+    const itemName = img.alt || img.getAttribute('alt') || '';
+    if (itemName) {
+        getFallbackImage(itemName).then(url => {
+            if (url) {
+                img.src = url;
+            } else {
+                renderSvgPlaceholder(img, type, id);
+            }
+        }).catch(() => {
+            renderSvgPlaceholder(img, type, id);
+        });
+    } else {
+        renderSvgPlaceholder(img, type, id);
+    }
+};
+
+function renderSvgPlaceholder(img, type, id) {
     const container = img.parentElement;
-    if (container) {
+    if (container && !container.querySelector('svg')) {
         let heartHTML = '';
         if (type === 'market' && id !== null) {
             const isLiked = window.favoriteItemIds && window.favoriteItemIds.includes(id);
@@ -416,10 +561,4 @@ window.handleInspectImageError = function(img, type = 'market', id = null) {
             ${heartHTML}
         `;
     }
-};
-
-document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-        closeInspectItem();
-    }
-});
+}
