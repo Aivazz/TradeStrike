@@ -100,6 +100,15 @@ async function listInventoryItemForSale(id, price, ownerId) {
     return { ...invItem, price, status: 'listed', id: insertId };
 }
 
+async function cancelInventoryListing(id, ownerId) {
+    const invItem = await findInventoryItemById(id, ownerId);
+    if (!invItem) return null;
+
+    await db.execute('CALL sp_CancelInventoryListing(?, ?)', [id, ownerId]);
+    return { ...invItem, status: 'available' };
+}
+
+
 async function addFavoriteItem(userId, marketItemId) {
     await db.execute('CALL sp_AddFavoriteItem(?, ?)', [userId, marketItemId]);
     return { success: true };
@@ -138,6 +147,7 @@ module.exports = {
     getInventoryItems,
     findInventoryItemById,
     listInventoryItemForSale,
+    cancelInventoryListing,
     addFavoriteItem,
     removeFavoriteItem,
     getFavoriteItems,

@@ -83,6 +83,16 @@ async function listInventoryItemForSale(id, price, userId) {
     return item;
 }
 
+async function cancelInventoryListing(id, userId) {
+    const item = await itemDal.cancelInventoryListing(id, userId);
+    if (!item) {
+        const error = new Error('Eşya envanterde bulunamadı veya satışta değil');
+        error.statusCode = 404;
+        throw error;
+    }
+    return item;
+}
+
 async function addFavoriteItem(userId, marketItemId) {
     return itemDal.addFavoriteItem(userId, marketItemId);
 }
@@ -102,6 +112,7 @@ module.exports = {
     getInventoryItem,
     buyMarketplaceItem,
     listInventoryItemForSale,
+    cancelInventoryListing,
     addFavoriteItem,
     removeFavoriteItem,
     getFavoriteItems

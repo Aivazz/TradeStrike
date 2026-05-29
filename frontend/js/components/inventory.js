@@ -102,7 +102,10 @@ function displayInventory() {
     const totalItemsCount = items.length;
     const estimatedValue = items.reduce((sum, item) => sum + (item.estPrice || 0), 0);
 
-    const cardsHTML = items.map(item => {
+    const listedItems = items.filter(item => item.status === 'listed');
+    const availableItems = items.filter(item => item.status !== 'listed');
+
+    function generateCardHTML(item) {
         const nameParts = item.name.split('|');
         const weaponName = nameParts[0] ? nameParts[0].trim() : item.name;
         const skinName = nameParts[1] ? nameParts[1].trim() : '';
@@ -110,6 +113,22 @@ function displayInventory() {
         const cleanWeaponName = weaponName.replace('StatTrak™', '').replace('StatTrak', '').trim();
         const condDetails = getConditionDetails(item.condition);
         const floatValue = Number(item.float) || 0;
+        const isListed = item.status === 'listed';
+
+        let actionButtons = '';
+        if (isListed) {
+            if (!currentViewedUserId) {
+                actionButtons = `<button class="btn-buy btn-sell btn-cancel-sell" onclick="cancelSellListing(${item.id}, this)">İptal Et</button>`;
+            }
+        } else {
+            if (!currentViewedUserId) {
+                actionButtons = `<button class="btn-buy btn-sell" onclick="openSellModal(${item.id})">Sat</button>`;
+            }
+        }
+        actionButtons += `<button class="btn-inspect" style="${currentViewedUserId ? 'width: 100%;' : ''}" onclick="inspectInventoryItem(${item.id})">İncele</button>`;
+
+        const priceTitle = isListed ? 'Satış Fiyatı' : 'Tahmini Fiyat';
+        const priceVal = isListed ? Number(item.listedPrice || item.estPrice) : item.estPrice;
 
         return `
             <div class="market-col">
@@ -117,6 +136,7 @@ function displayInventory() {
                     <div class="item-image-wrapper" style="cursor: pointer;" onclick="inspectInventoryItem(${item.id})">
                         <img src="${getImageUrl(item.imageUrl)}" alt="${item.name}" onerror="handleInspectImageError(this, 'inventory', ${item.id})">
                         ${isStatTrak ? '<span class="stattrak-badge">StatTrak™</span>' : ''}
+                        ${isListed ? '<span class="stattrak-badge listed-badge" style="top: 12px; left: auto; right: 12px;">Satışta</span>' : ''}
                     </div>
                     <div class="item-body" style="cursor: pointer;" onclick="inspectInventoryItem(${item.id})">
                         <div class="weapon-info">
@@ -140,17 +160,50 @@ function displayInventory() {
                         </div>
                     </div>
                     <div class="inventory-price-row">
-                        <span>Tahmini Fiyat</span>
-                        <strong>${item.estPrice.toFixed(2)} &#8378;</strong>
+                        <span>${priceTitle}</span>
+                        <strong>${priceVal.toFixed(2)} &#8378;</strong>
                     </div>
                     <div class="inventory-actions" style="${currentViewedUserId ? 'display: block;' : ''}">
-                        ${!currentViewedUserId ? `<button class="btn-buy btn-sell" onclick="openSellModal(${item.id})">Sat</button>` : ''}
-                        <button class="btn-inspect" style="${currentViewedUserId ? 'width: 100%;' : ''}" onclick="inspectInventoryItem(${item.id})">İncele</button>
+                        ${actionButtons}
                     </div>
                 </article>
             </div>
         `;
-    }).join('');
+    }
+
+    const listedCardsHTML = listedItems.map(item => generateCardHTML(item)).join('');
+    const availableCardsHTML = availableItems.map(item => generateCardHTML(item)).join('');
+
+    let sectionsHTML = '';
+
+    if (listedItems.length > 0) {
+        sectionsHTML += `
+            <div class="section-heading items-heading">
+                <h2>${currentViewedUserId ? `${currentViewedUserName} Satışta Olan Eşyaları` : 'Satışta Olan Eşyalarınız'}</h2>
+                <span>${listedItems.length} satışta olan eşya</span>
+            </div>
+            <div class="market-grid inventory-grid" style="margin-bottom: 40px;">
+                ${listedCardsHTML}
+            </div>
+        `;
+    }
+
+    sectionsHTML += `
+        <div class="section-heading items-heading">
+            <h2>${currentViewedUserId ? `${currentViewedUserName} Envanteri` : 'Envanteriniz'}</h2>
+            <span>${availableItems.length} sahip olunan eşya</span>
+        </div>
+
+        <div class="market-grid inventory-grid">
+            ${availableCardsHTML || `
+                <div class="state-panel">
+                    <i class="bi bi-search" style="font-size: 28px; color: var(--accent-blue); margin-bottom: 4px;"></i>
+                    <span style="color: #ffffff; font-size: 15px; font-weight: 600;">Eşya bulunamadı</span>
+                    <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Filtrelerinizi veya arama sorgunuzu ayarlamayı deneyin.</p>
+                </div>
+            `}
+        </div>
+    `;
 
     const inventoryHTML = `
         <section class="inventory-section">
@@ -171,20 +224,7 @@ function displayInventory() {
                 </article>
             </div>
 
-            <div class="section-heading items-heading">
-                <h2>${currentViewedUserId ? `${currentViewedUserName} Envanteri` : 'Envanteriniz'}</h2>
-                <span>${totalItemsCount} sahip olunan eşya</span>
-            </div>
-
-            <div class="market-grid inventory-grid">
-                ${cardsHTML || `
-                    <div class="state-panel">
-                        <i class="bi bi-search" style="font-size: 28px; color: var(--accent-blue); margin-bottom: 4px;"></i>
-                        <span style="color: #ffffff; font-size: 15px; font-weight: 600;">Eşya bulunamadı</span>
-                        <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Filtrelerinizi veya arama sorgunuzu ayarlamayı deneyin.</p>
-                    </div>
-                `}
-            </div>
+            ${sectionsHTML}
 
             <div class="modal-backdrop" id="sell-modal" aria-hidden="true" onclick="handleSellBackdrop(event)">
                 <div class="sell-modal" role="dialog" aria-modal="true" aria-labelledby="sell-modal-title" style="width: min(440px, 100%);">
@@ -326,3 +366,24 @@ document.addEventListener('keydown', event => {
         closeSellModal();
     }
 });
+
+async function cancelSellListing(itemId, button) {
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'İptal ediliyor...';
+    }
+
+    try {
+        await cancelInventoryListing(itemId);
+        alert('Satış ilanı başarıyla iptal edildi.');
+        await renderInventory(currentViewedUserId, currentViewedUserName);
+    } catch (error) {
+        alert(error.message);
+        if (button) {
+            button.disabled = false;
+            button.textContent = 'İptal Et';
+        }
+    }
+}
+
+window.cancelSellListing = cancelSellListing;

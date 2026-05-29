@@ -72,6 +72,20 @@ async function handleItemRoute(req, res, pathname, searchParams) {
         }
     }
 
+    if (req.method === 'DELETE' && listingMatch) {
+        try {
+            const token = getBearerToken(req);
+            const currentUser = await userService.getCurrentUser(token);
+            const item = await itemService.cancelInventoryListing(
+                Number(listingMatch[1]),
+                currentUser.id
+            );
+            return sendJson(res, 200, { data: item });
+        } catch (error) {
+            return sendRouteError(res, error, 'Satış ilanı iptal edilemedi');
+        }
+    }
+
     if (req.method === 'GET' && pathname === '/api/favorites') {
         try {
             const token = getBearerToken(req);

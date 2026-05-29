@@ -59,6 +59,12 @@ function createInventoryListing(id, price) {
     });
 }
 
+function cancelInventoryListing(id) {
+    return apiRequest(`/inventory/${id}/listings`, {
+        method: 'DELETE'
+    });
+}
+
 function getTradeOffers(tab) {
     return apiRequest(`/trades?tab=${encodeURIComponent(tab)}`);
 }
